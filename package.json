@@ -1,0 +1,23 @@
+{
+  "name": "phonebook_backend",
+  "version": "1.0.0",
+  "description": "part3 exercise from fullstack open course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttngocthao/fullstackopen-2021-selftraining_part3.git"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "TTNT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ttngocthao/fullstackopen-2021-selftraining_part3/issues"
+  },
+  "homepage": "https://github.com/ttngocthao/fullstackopen-2021-selftraining_part3#readme"
+}
