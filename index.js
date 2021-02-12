@@ -4,7 +4,7 @@ const app = express()
 app.use(express.json())
 
 
-const persons = [
+let persons = [
     {
       "name": "Arto Hellas",
       "number": "040-123456",
@@ -31,6 +31,10 @@ const persons = [
       "id": 6
     }
   ]
+
+const generateId =()=>{
+  return Math.floor(10000*Math.random())
+}
 
 app.get('/',(req,res)=>{   
     res.send('<h1>Part 3 Exercise</h1>')
@@ -62,14 +66,26 @@ app.get('/api/persons/:id',(req,res)=>{
 })
 
 app.delete('/api/persons/:id',(req,res)=>{
-    const personId = Number(req.params.id)
+    const personId = Number(req.params.id)//have to use Number as params.id is a string
     //find if this person exist
     const person = persons.find(p=>p.id === personId)
     if(person){
-        res.status(200).json('Successfully deleted')
+      persons.filter(p=>p.id !== personId)
+      return  res.status(200).json('Successfully deleted')
     }else{
-        res.status(404).end()
+      return  res.status(404).end()
     }
+})
+
+app.post('/api/persons',(req,res)=>{
+  if(!req.body.name || !req.body.number ){
+    return res.status(400).json({
+      error: 'Name or number is missing'
+    })  }
+ 
+  const person = {name: req.body.name,number: req.body.number, id: generateId()}
+  persons = persons.concat(person)
+  return res.status(200).json(person)
 })
 
 const PORT = 3001
