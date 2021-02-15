@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js ",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "sudo rm -rf build && cd ~/fullstackopen-2021-selftraining/part2/phonebook && npm run build --prod && sudo cp -r build ~/fullstackopen-2021-selftraining_part3/",
+    "deploy": "git push https://git.heroku.com/arcane-brushlands-11438.git",
+    "deploy:full":"npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
+    "logs:prod":"heroku logs --tail"
   },
   "repository": {
     "type": "git",
