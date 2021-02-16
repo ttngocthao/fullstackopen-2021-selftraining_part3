@@ -9,8 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "sudo rm -rf build && cd ~/fullstackopen-2021-selftraining/part2/phonebook && npm run build --prod && sudo cp -r build ~/fullstackopen-2021-selftraining_part3/",
     "deploy": "git push https://git.heroku.com/arcane-brushlands-11438.git",
-    "deploy:full":"npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
-    "logs:prod":"heroku logs --tail"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
+    "logs:prod": "heroku logs --tail"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "mongoose": "^5.11.16",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
