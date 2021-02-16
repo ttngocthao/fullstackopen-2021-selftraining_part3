@@ -17,13 +17,6 @@ const password = process.argv[2]
 const url = `mongodb+srv://thaotruong:${password}@ttnt-cluster.fmytw.mongodb.net/test?retryWrites=true`
 const personName = process.argv[3]
 const personNumber = process.argv[4]
-
-mongoose.connect(url,{useNewUrlParser: true, useUnifiedTopology:false, useFindAndModify:false,useCreateIndex:true}).then(res=>{
-    console.log('connected to mongoDB')
-}).catch(err=>{
-    console.log('error in connecting to mongoDb',err)
-})
-
 const personSchema = new mongoose.Schema({
     name: String,
     number: String
@@ -36,14 +29,28 @@ const person = new Person({
     name:personName,
     number: personNumber
 })
-//save to database
-person.save().then(res=>{
-    console.log('save new person')
-    mongoose.connection.close()//If the connection is not closed, the program will never finish its execution.
+
+mongoose.connect(url,{useNewUrlParser: true, useUnifiedTopology:true, useFindAndModify:false,useCreateIndex:true}).then(()=>{
+    console.log('connected to DB')
+    //save to database if name and number are not undefined
+   if(personName&&personNumber){
+        person.save().then(res=>{
+        console.log('added '+ res.name + ' number '+ res.number)
+        mongoose.connection.close()//If the connection is not closed, the program will never finish its execution.
+    }).catch(err=>console.log(err))
+   }else{
+        //Fetch data from database
+        Person.find({}).then(res=>{
+            let output=[]
+            res.forEach(p=>output.push(p.name + ' ' + p.number))
+            console.log('Phonebook: \r\n',output.join('\r\n'))
+            mongoose.connection.close()
+        })
+   }
+  
 })
 
-//Fetch data from database
-// Person.find({}).then(res=>{
-//     console.log('list of people',res)
-//     mongoose.connection.close()
-// })
+
+
+
+
