@@ -1,47 +1,52 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
+
+
+
 
 app.use(express.static('build'))//point to frontend html file
 app.use(express.json())
-
 app.use(cors())
 
 morgan.token('person',(req,res)=>JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person '))
 
-let persons = [
-    {
-      "name": "Arto Hellas",
-      "number": "040-123456",
-      "id": 1
-    },
-    {
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523",
-      "id": 2
-    },
-    {
-      "name": "Dan Abramov",
-      "number": "12-43-234345",
-      "id": 3
-    },
-    {
-      "name": "Mary Poppendieck",
-      "number": "39-23-6423122",
-      "id": 4
-    },
-    {
-      "name": "Jane Doe",
-      "number": "789456123",
-      "id": 6
-    }
-  ]
+// let persons = [
+//     {
+//       "name": "Arto Hellas",
+//       "number": "040-123456",
+//       "id": 1
+//     },
+//     {
+//       "name": "Ada Lovelace",
+//       "number": "39-44-5323523",
+//       "id": 2
+//     },
+//     {
+//       "name": "Dan Abramov",
+//       "number": "12-43-234345",
+//       "id": 3
+//     },
+//     {
+//       "name": "Mary Poppendieck",
+//       "number": "39-23-6423122",
+//       "id": 4
+//     },
+//     {
+//       "name": "Jane Doe",
+//       "number": "789456123",
+//       "id": 6
+//     }
+//   ]
 
 const generateId =()=>{
   return Math.floor(10000*Math.random())
 }
+
 
 app.get('/',(req,res)=>{   
     res.send('<h1>Part 3 Exercise</h1>')
@@ -85,22 +90,35 @@ app.delete('/api/persons/:id',(req,res)=>{
 })
 
 app.post('/api/persons',(req,res)=>{
-  if(!req.body.name || !req.body.number ){
+  const personName = req.body.name
+  const personNumber = req.body.number
+  if(!personName || !personNumber ){
     return res.status(400).json({
       error: 'Name or number is missing.'
     })  
   }
-  if(persons.find(p=>p.name === req.body.name)){
-     return res.status(400).json({
-      error: 'Name must be unique.'
-    })  
-  }
-  const person = {name: req.body.name,number: req.body.number, id: generateId()}
+  const person = new Person({
+    name:personName,
+    number: personNumber
+  })
+
+  //save to mongoDB here
+  person.save().then(savedPerson=>{
+   return res.status(200).json(savedPerson)
+  }).catch(err=> res.status(400).json(err))
+
+
+  // if(persons.find(p=>p.name === req.body.name)){
+  //    return res.status(400).json({
+  //     error: 'Name must be unique.'
+  //   })  
+  // }
+  // const person = {name: req.body.name,number: req.body.number, id: generateId()}
  
-  return res.status(200).json(person)
+  // return res.status(200).json(person)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
 })
