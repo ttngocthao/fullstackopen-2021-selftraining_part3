@@ -23,35 +23,25 @@ app.use(express.json())
 app.use(cors())
 
 
-morgan.token('person',(req,res)=>JSON.stringify(req.body))
+morgan.token('person',(req)=>JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person '))
 
 
 
 
 app.get('/',(req,res)=>{   
-    res.send('<h1>Part 3 Exercise</h1>')
-})
-
-app.get('/info',(req,res)=>{
-    const personsLength = persons.length
-    const reqTime = new Date()
-    res.send(`
-        <p>Phonebook has info for ${personsLength}</p>
-        <p>${reqTime}</p>
-    `)
+  res.send('<h1>Part 3 Exercise</h1>')
 })
 
 app.get('/api/persons',(req,res)=>{
   Person.find({}).then(returnedList=>{
     return res.status(200).json(returnedList)
   })
-    // res.json(persons)
 })
 
 
 app.get('/api/persons/:id',(req,res,next)=>{      
-    Person.findById(req.params.id)
+  Person.findById(req.params.id)
     .then(person=>{     
       if(person){
         return res.status(200).json(person)   
@@ -59,15 +49,15 @@ app.get('/api/persons/:id',(req,res,next)=>{
         console.log('could not find that person')
         res.status(404).end()
       }     
-         
+          
     })
     .catch(err=>next(err))
 })
 
 app.delete('/api/persons/:id',(req,res,next)=>{
-   Person.findByIdAndRemove(req.params.id)
-   .then(result=>res.status(204).json({...result,msg:'Successfully deleted'}))
-   .catch(error=>next(error))
+  Person.findByIdAndRemove(req.params.id)
+    .then(result=>res.status(204).json({...result,msg:'Successfully deleted'}))
+    .catch(error=>next(error))
     
 })
 
@@ -81,21 +71,21 @@ app.post('/api/persons',(req,res,next)=>{
   })
 
  
-     person.save().then(newPerson=> res.status(200).json(newPerson))
-  .catch(err=> next(err))
+  person.save()
+    .then(newPerson=> res.status(200).json(newPerson))
+    .catch(err=> next(err))
     
 })
 
-app.put('/api/persons/:id',(req,res,next)=>{ 
-  
-  const opts = { runValidators: true, new: true };//{new:true} --> to return a new modified document. without that, it will return the original document.
+app.put('/api/persons/:id',(req,res,next)=>{   
+  const opts = { runValidators: true, new: true }//{new:true} --> to return a new modified document. without that, it will return the original document.
   Person.findByIdAndUpdate(req.params.id,{number: req.body.number},opts)
-  .then((updatedPerson)=>res.status(200).json({msg:'updated item',name:updatedPerson._doc.name,number: updatedPerson._doc.number}))
-  .catch(error=> next(error))
+    .then((updatedPerson)=>res.status(200).json({msg:'updated item',name:updatedPerson._doc.name,number: updatedPerson._doc.number}))
+    .catch(error=> next(error))
 })
 
 app.use(errorHandler)//tell the app to use the errorHandler middleware for invalid id
 const PORT = process.env.PORT
 app.listen(PORT,()=>{
-    console.log(`Server is running on port ${PORT}`)
+  console.log(`Server is running on port ${PORT}`)
 })
