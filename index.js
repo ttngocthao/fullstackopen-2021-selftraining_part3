@@ -6,46 +6,24 @@ const cors = require('cors')
 const Person = require('./models/person')
 
 
-
+//write middleware to handle errors
+const errorHandler = (error,req,res,next)=>{
+  console.error('from errorHandler',error.message)
+  if(error.name ==='CastError'){ //MongoDB exception - error was caused by invalid object id
+    return res.status(400).send({error:'mal-formatted id'})
+  }
+  next(error)
+}
 
 app.use(express.static('build'))//point to frontend html file
 app.use(express.json())
 app.use(cors())
 
+
 morgan.token('person',(req,res)=>JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person '))
 
-// let persons = [
-//     {
-//       "name": "Arto Hellas",
-//       "number": "040-123456",
-//       "id": 1
-//     },
-//     {
-//       "name": "Ada Lovelace",
-//       "number": "39-44-5323523",
-//       "id": 2
-//     },
-//     {
-//       "name": "Dan Abramov",
-//       "number": "12-43-234345",
-//       "id": 3
-//     },
-//     {
-//       "name": "Mary Poppendieck",
-//       "number": "39-23-6423122",
-//       "id": 4
-//     },
-//     {
-//       "name": "Jane Doe",
-//       "number": "789456123",
-//       "id": 6
-//     }
-//   ]
 
-const generateId =()=>{
-  return Math.floor(10000*Math.random())
-}
 
 
 app.get('/',(req,res)=>{   
@@ -62,31 +40,32 @@ app.get('/info',(req,res)=>{
 })
 
 app.get('/api/persons',(req,res)=>{
-    res.json(persons)
+  Person.find({}).then(returnedList=>{
+    return res.status(200).json(returnedList)
+  })
+    // res.json(persons)
 })
 
-app.get('/api/persons/:id',(req,res)=>{
-    const personId = Number(req.params.id)
-    //find if this person exist
-    const person = persons.find(p=>p.id === personId)
-    if(person){
-        res.json(person)
-    }else{
+
+app.get('/api/persons/:id',(req,res,next)=>{      
+    Person.findById(req.params.id)
+    .then(person=>{     
+      if(person){
+        return res.status(200).json(person)   
+      }else{
+        console.log('could not find that person')
         res.status(404).end()
-    }
-
+      }     
+         
+    })
+    .catch(err=>next(err))
 })
 
-app.delete('/api/persons/:id',(req,res)=>{
-    const personId = Number(req.params.id)//have to use Number as params.id is a string
-    //find if this person exist
-    const person = persons.find(p=>p.id === personId)
-    if(person){
-      persons.filter(p=>p.id !== personId)
-      return  res.status(200).json('Successfully deleted')
-    }else{
-      return  res.status(404).end()
-    }
+app.delete('/api/persons/:id',(req,res,next)=>{
+   Person.findByIdAndRemove(req.params.id)
+   .then(result=>res.status(204).json({...result,msg:'Successfully deleted'}))
+   .catch(error=>next(error))
+    
 })
 
 app.post('/api/persons',(req,res)=>{
@@ -101,23 +80,27 @@ app.post('/api/persons',(req,res)=>{
     name:personName,
     number: personNumber
   })
-
+  
   //save to mongoDB here
-  person.save().then(savedPerson=>{
+  person.save()
+  .then(savedPerson=>{
    return res.status(200).json(savedPerson)
-  }).catch(err=> res.status(400).json(err))
-
-
-  // if(persons.find(p=>p.name === req.body.name)){
-  //    return res.status(400).json({
-  //     error: 'Name must be unique.'
-  //   })  
-  // }
-  // const person = {name: req.body.name,number: req.body.number, id: generateId()}
- 
-  // return res.status(200).json(person)
+  })
+  .catch(err=> res.status(400).json(err))
+  
 })
 
+app.put('/api/persons/:id',(req,res,next)=>{ 
+  const person ={
+    name: req.body.name,
+    number: req.body.number
+  }
+  Person.findByIdAndUpdate(req.params.id,person,{new:true})//{new:true} --> to return a new modified document. without that, it will return the original document.
+  .then((updatedPerson)=>res.status(200).json({msg:'updated item',name:updatedPerson._doc.name,number: updatedPerson._doc.number}))
+  .catch(error=> next(error))
+})
+
+app.use(errorHandler)//tell the app to use the errorHandler middleware for invalid id
 const PORT = process.env.PORT
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
