@@ -8,9 +8,12 @@ const Person = require('./models/person')
 
 //write middleware to handle errors
 const errorHandler = (error,req,res,next)=>{
+ 
   console.error('from errorHandler',error.message)
   if(error.name ==='CastError'){ //MongoDB exception - error was caused by invalid object id
     return res.status(400).send({error:'mal-formatted id'})
+  }else if(error.name ==='ValidationError'){
+    return res.status(400).send({error: error.message})
   }
   next(error)
 }
@@ -68,26 +71,19 @@ app.delete('/api/persons/:id',(req,res,next)=>{
     
 })
 
-app.post('/api/persons',(req,res)=>{
+app.post('/api/persons',(req,res,next)=>{
   const personName = req.body.name
   const personNumber = req.body.number
-  if(!personName || !personNumber ){
-    return res.status(400).json({
-      error: 'Name or number is missing.'
-    })  
-  }
+  
   const person = new Person({
     name:personName,
     number: personNumber
   })
-  
-  //save to mongoDB here
-  person.save()
-  .then(savedPerson=>{
-   return res.status(200).json(savedPerson)
-  })
-  .catch(err=> res.status(400).json(err))
-  
+
+ 
+     person.save().then(newPerson=> res.status(200).json(newPerson))
+  .catch(err=> next(err))
+    
 })
 
 app.put('/api/persons/:id',(req,res,next)=>{ 
