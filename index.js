@@ -87,11 +87,9 @@ app.post('/api/persons',(req,res,next)=>{
 })
 
 app.put('/api/persons/:id',(req,res,next)=>{ 
-  const person ={
-    name: req.body.name,
-    number: req.body.number
-  }
-  Person.findByIdAndUpdate(req.params.id,person,{new:true})//{new:true} --> to return a new modified document. without that, it will return the original document.
+  
+  const opts = { runValidators: true, new: true };//{new:true} --> to return a new modified document. without that, it will return the original document.
+  Person.findByIdAndUpdate(req.params.id,{number: req.body.number},opts)
   .then((updatedPerson)=>res.status(200).json({msg:'updated item',name:updatedPerson._doc.name,number: updatedPerson._doc.number}))
   .catch(error=> next(error))
 })
